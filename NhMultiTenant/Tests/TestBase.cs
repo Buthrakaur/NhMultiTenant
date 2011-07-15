@@ -44,25 +44,7 @@ namespace NhMultiTenant.Tests
 			session = sessionFactory.OpenSession();
 
 			session.BeginTransaction();
-			var sb = new StringBuilder();
-			new SchemaExport(cfg).Execute(false, true, false, session.Connection, new StringWriter(sb));
-			//Console.Out.WriteLine(sb.ToString());
-		}
-
-		private void ListTables(string name)
-		{
-			Console.Out.WriteLine(">> sqlite_master " + name);
-			using (var cmd = session.Connection.CreateCommand())
-			{
-				cmd.CommandText = "SELECT name FROM sqlite_master";
-				using (var r = cmd.ExecuteReader())
-				{
-					while (r.Read())
-					{
-						Console.Out.WriteLine(" > " + r.GetString(0));
-					}
-				}
-			}
+			new SchemaExport(cfg).Execute(false, true, false, session.Connection, null);
 		}
 
 		private void MapEntities(ModelMapper mapper)
