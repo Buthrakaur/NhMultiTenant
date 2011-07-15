@@ -5,16 +5,20 @@ using System.Text;
 
 namespace NhMultiTenant.Model
 {
-	public abstract class EntityBase
+	public class Tenant
 	{
-		private long tenantId;
-
 		private static long lastId;
 		public virtual long Id { get; protected set; }
+		public virtual string Name { get; protected set; }
 
-		protected EntityBase()
+		protected Tenant()
 		{
 			Id = ++lastId;
+		}
+
+		public Tenant(string name): this()
+		{
+			Name = name;
 		}
 	}
 }
