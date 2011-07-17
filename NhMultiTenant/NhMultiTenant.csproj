@@ -56,7 +56,8 @@
     <Compile Include="Model\EntityBase.cs" />
     <Compile Include="Model\Tenant.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tests\ContactMapTests.cs" />
+    <Compile Include="Tests\QueryTenantDataTests.cs" />
+    <Compile Include="Tests\SaveTenantDataTests.cs" />
     <Compile Include="Tests\TenantMapTests.cs" />
     <Compile Include="Tests\TestBase.cs" />
   </ItemGroup>

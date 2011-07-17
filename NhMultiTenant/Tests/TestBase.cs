@@ -8,9 +8,11 @@ using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Driver;
+using NHibernate.Engine;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Impl.CustomizersImpl;
 using NHibernate.Tool.hbm2ddl;
+using NHibernate.Type;
 using NhMultiTenant.Infrastructure;
 using NhMultiTenant.Model;
 
@@ -28,7 +30,6 @@ namespace NhMultiTenant.Tests
 
 		public TestBase()
 		{
-			CurrentTennantGetter = () => session.Load<Tenant>(DefaultTenantId);
 			var cfg = new Configuration()
 				.DataBaseIntegration(x =>
 				                     	{
@@ -36,9 +37,13 @@ namespace NhMultiTenant.Tests
 				                     		x.Dialect<SQLiteDialect>();
 				                     		x.ConnectionString = "Data Source=:memory:;Version=3;New=True";
 				                     	})
-				.SetInterceptor(new MultiTenantInterceptor(() => CurrentTennantGetter()))
+				.SetInterceptor(new MultiTenantInterceptor(SaveInterceptorTennantGetter))
 				.SetProperty("show_sql", "true")
 				;
+			cfg.AddFilterDefinition(new FilterDefinition("tenantFilter",
+			                                             "TenantId = :tenantId",
+			                                             new Dictionary<string, IType> {{"tenantId", TypeFactory.Basic("System.Int64")}},
+			                                             false));
 
 			var mapper = new ModelMapper();
 			MapEntities(mapper);
@@ -46,17 +51,24 @@ namespace NhMultiTenant.Tests
 			cfg.AddDeserializedMapping(hbmMappings, null);
 			sessionFactory = cfg.BuildSessionFactory();
 			session = sessionFactory.OpenSession();
+			session.EnableFilter("tenantFilter")
+				.SetParameter("tenantId", FilterTenantId);
 
 			session.BeginTransaction();
 			new SchemaExport(cfg).Execute(false, true, false, session.Connection, null);
 
-			var tenant = new Tenant("defaultTenant");
+			var tenant = new Tenant(123456789, "defaultTenant");
 			session.Save(tenant);
-			DefaultTenantId = tenant.Id;
+			SaveInterceptorTenantId = tenant.Id;
 		}
 
-		protected readonly long DefaultTenantId;
-		protected Func<Tenant> CurrentTennantGetter;
+		protected long SaveInterceptorTenantId;
+		private Tenant SaveInterceptorTennantGetter()
+		{
+			return session.Load<Tenant>(SaveInterceptorTenantId);
+		}
+
+		protected virtual long FilterTenantId { get { return SaveInterceptorTenantId; } }
 
 		private void MapEntities(ModelMapper mapper)
 		{
@@ -83,6 +95,7 @@ namespace NhMultiTenant.Tests
 			                     		            	});
 			                     		ca.Property("TenantId",
 			                     		            p => p.NotNullable(true));
+										ca.Filter("tenantFilter", fm => {});
 			                     	});
 		}
 
