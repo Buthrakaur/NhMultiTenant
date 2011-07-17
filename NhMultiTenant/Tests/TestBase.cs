@@ -9,7 +9,9 @@ using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Driver;
 using NHibernate.Mapping.ByCode;
+using NHibernate.Mapping.ByCode.Impl.CustomizersImpl;
 using NHibernate.Tool.hbm2ddl;
+using NhMultiTenant.Infrastructure;
 using NhMultiTenant.Model;
 
 namespace NhMultiTenant.Tests
@@ -33,7 +35,8 @@ namespace NhMultiTenant.Tests
 				                     		x.Dialect<SQLiteDialect>();
 				                     		x.ConnectionString = "Data Source=:memory:;Version=3;New=True";
 				                     	})
-				//.SetProperty("show_sql", "true")
+				.SetInterceptor(new MultiTenantInterceptor(() => GetCurrentTenant()))
+				.SetProperty("show_sql", "true")
 				;
 
 			var mapper = new ModelMapper();
@@ -45,6 +48,16 @@ namespace NhMultiTenant.Tests
 
 			session.BeginTransaction();
 			new SchemaExport(cfg).Execute(false, true, false, session.Connection, null);
+
+			var tenant = new Tenant("defaultTenant");
+			session.Save(tenant);
+			DefaultTenantId = tenant.Id;
+		}
+
+		protected readonly long DefaultTenantId;
+		protected virtual Tenant GetCurrentTenant()
+		{
+			return session.Load<Tenant>(DefaultTenantId);
 		}
 
 		private void MapEntities(ModelMapper mapper)
@@ -70,6 +83,8 @@ namespace NhMultiTenant.Tests
 			                     		            		p.NotNullable(true);
 			                     		            		p.Unique(true);
 			                     		            	});
+			                     		ca.Property("TenantId",
+			                     		            p => p.NotNullable(true));
 			                     	});
 		}
 

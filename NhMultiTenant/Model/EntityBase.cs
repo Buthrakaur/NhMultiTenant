@@ -7,7 +7,8 @@ namespace NhMultiTenant.Model
 {
 	public abstract class EntityBase
 	{
-		private long tenantId;
+		//todo: map as private field - not possible due to MappingByCode limitation
+		protected virtual long TenantId { get; set; }
 
 		private static long lastId;
 		public virtual long Id { get; protected set; }
