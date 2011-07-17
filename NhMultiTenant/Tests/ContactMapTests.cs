@@ -26,5 +26,22 @@ namespace NhMultiTenant.Tests
 				Assert.Equal(DefaultTenantId, Convert.ToInt64(cmd.ExecuteScalar()));
 			}
 		}
+
+		[Fact]
+		public void CanPersistWithOtherTenantId()
+		{
+			CurrentTennantGetter = () => new Tenant(666, "t666");
+			var c = new Contact("c");
+			Session.Save(c);
+			
+			Session.Flush();
+			Session.Clear();
+
+			using(var cmd = Session.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select tenantid from Contact where name = 'c'";
+				Assert.Equal(666L, Convert.ToInt64(cmd.ExecuteScalar()));
+			}
+		}
 	}
 }

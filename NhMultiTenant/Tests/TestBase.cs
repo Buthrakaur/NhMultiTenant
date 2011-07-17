@@ -28,6 +28,7 @@ namespace NhMultiTenant.Tests
 
 		public TestBase()
 		{
+			CurrentTennantGetter = () => session.Load<Tenant>(DefaultTenantId);
 			var cfg = new Configuration()
 				.DataBaseIntegration(x =>
 				                     	{
@@ -35,7 +36,7 @@ namespace NhMultiTenant.Tests
 				                     		x.Dialect<SQLiteDialect>();
 				                     		x.ConnectionString = "Data Source=:memory:;Version=3;New=True";
 				                     	})
-				.SetInterceptor(new MultiTenantInterceptor(() => GetCurrentTenant()))
+				.SetInterceptor(new MultiTenantInterceptor(() => CurrentTennantGetter()))
 				.SetProperty("show_sql", "true")
 				;
 
@@ -55,10 +56,7 @@ namespace NhMultiTenant.Tests
 		}
 
 		protected readonly long DefaultTenantId;
-		protected virtual Tenant GetCurrentTenant()
-		{
-			return session.Load<Tenant>(DefaultTenantId);
-		}
+		protected Func<Tenant> CurrentTennantGetter;
 
 		private void MapEntities(ModelMapper mapper)
 		{

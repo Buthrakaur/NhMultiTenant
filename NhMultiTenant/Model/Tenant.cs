@@ -20,5 +20,11 @@ namespace NhMultiTenant.Model
 		{
 			Name = name;
 		}
+
+		public Tenant(long id, string name)
+		{
+			Id = id;
+			Name = name;
+		}
 	}
 }
