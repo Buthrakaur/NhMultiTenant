@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NHibernate.Cfg;
+using NHibernate.Mapping.ByCode;
 using NhMultiTenant.Model;
 using Xunit;
 

@@ -29,9 +29,14 @@ namespace NhMultiTenant.Infrastructure
 
 			state[index] = tenantId;
 
-			entity.GetType()
+			typeof(EntityBase)
 				.GetProperty("TenantId", BindingFlags.Instance | BindingFlags.NonPublic)
-				.SetValue(entity, tenantId, null);
+				.SetValue(entity, tenantId,
+				          BindingFlags.NonPublic | BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.FlattenHierarchy,
+				          null,
+				          null,
+				          null
+				);
 
 			return false;
 		}
